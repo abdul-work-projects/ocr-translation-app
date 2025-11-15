@@ -49,14 +49,6 @@ export const TranslationScreen: React.FC<Props> = ({ route }) => {
       setTranslatedText(result.translatedText);
       setDetectedLang(result.sourceLang);
       setLoading(false);
-
-      // Show demo mode notice
-      if (TranslationService.getMode() === 'demo') {
-        Alert.alert(
-          'Demo Mode',
-          'This is a demo translation. To use real translation, configure Google Translate API in the translation service.'
-        );
-      }
     } catch (error: any) {
       setLoading(false);
       Alert.alert('Error', error.message || ERROR_MESSAGES.TRANSLATION_FAILED);
@@ -82,96 +74,106 @@ export const TranslationScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Translate Text</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Translate Text</Text>
 
-      {TranslationService.getMode() === 'demo' && (
-        <View style={styles.demoNotice}>
-          <Text style={styles.demoText}>📝 Demo Mode Active</Text>
+        <View style={styles.engineNotice}>
+          <Text style={styles.engineText}>🌐 Powered by {TranslationService.getEngine()}</Text>
         </View>
-      )}
-
-      {/* Original Text Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>
-            Original Text {sourceLanguage && `(${sourceLanguage.name})`}
-          </Text>
-          <TouchableOpacity onPress={handleCopyOriginal} style={styles.copyButton}>
-            <Text style={styles.copyButtonText}>📋 Copy</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView style={styles.textContainer}>
-          <Text style={styles.text}>{text}</Text>
-        </ScrollView>
       </View>
 
-      {/* Language Selector */}
-      <View style={styles.languageSelector}>
-        <Text style={styles.languageSelectorLabel}>Translate to:</Text>
-        <TouchableOpacity
-          style={styles.languageButton}
-          onPress={() => setShowLanguages(!showLanguages)}
-        >
-          <Text style={styles.languageButtonText}>
-            {selectedLanguage?.name || 'Select Language'}
-          </Text>
-          <Text style={styles.languageButtonIcon}>{showLanguages ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
-
-        {showLanguages && (
-          <ScrollView style={styles.languageList}>
-            {LANGUAGES.map(lang => (
-              <TouchableOpacity
-                key={lang.code}
-                style={[
-                  styles.languageItem,
-                  lang.code === targetLang && styles.languageItemSelected,
-                ]}
-                onPress={() => {
-                  setTargetLang(lang.code);
-                  setShowLanguages(false);
-                  setTranslatedText('');
-                }}
-              >
-                <Text style={[
-                  styles.languageItemText,
-                  lang.code === targetLang && styles.languageItemTextSelected,
-                ]}>
-                  {lang.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-
-      {/* Translate Button */}
-      <TouchableOpacity
-        style={[styles.translateButton, loading && styles.translateButtonDisabled]}
-        onPress={handleTranslate}
-        disabled={loading}
-      >
-        <Text style={styles.translateButtonText}>
-          {loading ? 'Translating...' : 'Translate'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Translated Text Section */}
-      {translatedText !== '' && (
-        <View style={styles.section}>
+      <View style={styles.contentContainer}>
+        {/* Original Text Section */}
+        <View style={styles.textSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>
-              Translated Text ({selectedLanguage?.name})
+              Original Text {sourceLanguage && `(${sourceLanguage.name})`}
             </Text>
-            <TouchableOpacity onPress={handleCopyTranslated} style={styles.copyButton}>
+            <TouchableOpacity onPress={handleCopyOriginal} style={styles.copyButton}>
               <Text style={styles.copyButtonText}>📋 Copy</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.textContainer}>
-            <Text style={styles.text}>{translatedText}</Text>
+          <ScrollView
+            style={styles.textContainer}
+            contentContainerStyle={styles.textContentContainer}
+          >
+            <Text style={styles.text}>{text}</Text>
           </ScrollView>
         </View>
-      )}
+
+        {/* Translated Text Section */}
+        {translatedText !== '' && (
+          <View style={styles.textSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionLabel}>
+                Translated Text ({selectedLanguage?.name})
+              </Text>
+              <TouchableOpacity onPress={handleCopyTranslated} style={styles.copyButton}>
+                <Text style={styles.copyButtonText}>📋 Copy</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              style={styles.textContainer}
+              contentContainerStyle={styles.textContentContainer}
+            >
+              <Text style={styles.text}>{translatedText}</Text>
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.footer}>
+        {/* Language Selector */}
+        <View style={styles.languageSelector}>
+          <Text style={styles.languageSelectorLabel}>Translate to:</Text>
+          <TouchableOpacity
+            style={styles.languageButton}
+            onPress={() => setShowLanguages(!showLanguages)}
+          >
+            <Text style={styles.languageButtonText}>
+              {selectedLanguage?.name || 'Select Language'}
+            </Text>
+            <Text style={styles.languageButtonIcon}>{showLanguages ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+
+          {showLanguages && (
+            <ScrollView style={styles.languageList}>
+              {LANGUAGES.map(lang => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageItem,
+                    lang.code === targetLang && styles.languageItemSelected,
+                  ]}
+                  onPress={() => {
+                    setTargetLang(lang.code);
+                    setShowLanguages(false);
+                    setTranslatedText('');
+                  }}
+                >
+                  <Text style={[
+                    styles.languageItemText,
+                    lang.code === targetLang && styles.languageItemTextSelected,
+                  ]}>
+                    {lang.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Translate Button */}
+        <TouchableOpacity
+          style={[styles.translateButton, loading && styles.translateButtonDisabled]}
+          onPress={handleTranslate}
+          disabled={loading}
+        >
+          <Text style={styles.translateButtonText}>
+            {loading ? 'Translating...' : 'Translate'}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <LoadingSpinner
         visible={loading}
@@ -187,25 +189,34 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     padding: theme.spacing.lg,
   },
+  header: {
+    // Fixed header section at top
+  },
   title: {
     ...theme.typography.h2,
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
-  demoNotice: {
-    backgroundColor: theme.colors.secondary,
+  engineNotice: {
+    backgroundColor: theme.colors.success,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
     alignItems: 'center',
   },
-  demoText: {
+  engineText: {
     ...theme.typography.bodySmall,
     color: theme.colors.background,
     fontWeight: '600',
   },
-  section: {
+  contentContainer: {
+    flex: 1,
     marginBottom: theme.spacing.md,
+  },
+  textSection: {
+    flex: 1,
+    marginBottom: theme.spacing.md,
+    minHeight: 0, // Important for nested ScrollView
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -231,14 +242,20 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   textContainer: {
+    flex: 1,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
-    maxHeight: 120,
   },
   text: {
     ...theme.typography.body,
     color: theme.colors.text,
+  },
+  textContentContainer: {
+    flexGrow: 1,
+  },
+  footer: {
+    // Fixed footer section at bottom
   },
   languageSelector: {
     marginBottom: theme.spacing.md,
@@ -296,7 +313,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
     ...theme.shadows.md,
   },
   translateButtonDisabled: {
